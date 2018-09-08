@@ -14,7 +14,7 @@
 void printText(const char *text);
 void printTextSmall(const char *text, uint8_t xpos, uint8_t ypos);
 char *scanText(char *inputPlaceholder);
-
+unsigned concatenate(unsigned x, unsigned y);
 
 typedef struct {
     char data[256];
@@ -30,9 +30,8 @@ Block newBlock(int previousHash, int index) {
 
     new.prevHash = previousHash;
 
-    char hashData[256];
-    sprintf(hashData, "%s%d", new.data, new.prevHash);
-    new.hash = hash(hashData);
+    concatenate(new.hash, concatenate(*new.data - '0', new.prevHash));
+    new.hash = hash(new.hash);
 
     const char *FirstSuccess = "Found block ";
 
@@ -139,6 +138,13 @@ char *scanText(char *inputPlaceholder) {
     os_GetStringInput(inputPlaceholder, Buf, bufsize);
 
     return Buf;
+}
+
+unsigned concatenate(unsigned x, unsigned y) {
+    unsigned pow = 10;
+    while(y >= pow)
+        pow *= 10;
+    return x * pow + y;        
 }
 
 // Wow, such spaghetti. Much code.
