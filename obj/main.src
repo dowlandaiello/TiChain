@@ -1,0 +1,246 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"..\SRC\MAIN.C"
+	.assume ADL=1
+	SEGMENT CODE
+;    1	/* Keep these headers */
+;    2	#include <stdbool.h>
+;    3	#include <stddef.h>
+;    4	#include <stdint.h>
+;    5	
+;    6	/* Standard headers */
+;    7	#include <math.h>
+;    8	#include <stdio.h>
+;    9	#include <stdlib.h>
+;   10	#include <string.h>
+;   11	
+;   12	/* Put function prototypes here */
+;   13	void printText(const char *text);
+;   14	void printTextSmall(const char *text, uint8_t xpos, uint8_t ypos);
+;   15	char *scanText(char *inputPlaceholder);
+;   16	
+;   17	/* Put all your code here */
+;   18	void main(void) {
+_main:
+	LD	HL,-6
+	CALL	__frameset
+;   19	    /* uint8_t is an unsigned integer that can range from 0-255. */
+;   20	    /* It performs faster than just an int, so try to use it (or int8_t) when possible */
+;   21	    uint8_t count;
+;   22	
+;   23	    /* Initialize some strings */
+;   24	
+;   25	    char *Input = "Input: ";
+	LD	BC,L__0
+	LD	(IX+-3),BC
+;   26	
+;   27	    /* Initialize buffer */
+;   28	    char *Buf;
+;   29	
+;   30	    /* Init buf size */
+;   31	    size_t bufsize = 10000;
+;   32	
+;   33	    /* Clear the homescreen */
+;   34	    os_ClrHome();
+	LD	BC,_asm_ClrLCD
+	PUSH	BC
+	CALL	__OS
+	POP	BC
+	LD	BC,_asm_HomeUp
+	PUSH	BC
+	CALL	__OS
+	POP	BC
+	LD	BC,_asm_DrawStatusBar
+	PUSH	BC
+	CALL	__OS
+	POP	BC
+;   35	
+;   36	    os_GetStringInput(Input, Buf, bufsize);
+	LD	BC,10000
+	PUSH	BC
+	LD	BC,(IX+-6)
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_os_GetStringInput
+	POP	BC
+	POP	BC
+	POP	BC
+;   37	
+;   38	    printText(Buf);
+	LD	BC,(IX+-6)
+	PUSH	BC
+	CALL	_printText
+	POP	BC
+;   39	
+;   40	    while(!os_GetCSC());
+L_4:
+	CALL	_os_GetCSC
+	OR	A,A
+	JR	Z,L_4
+;   41	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _main ***************************
+;Name                         Addr/Register   Size   Type
+;_os_GetCSC                          IMPORT  -----   function
+;_printText                          IMPORT  -----   function
+;_os_GetStringInput                  IMPORT  -----   function
+;_asm_DrawStatusBar                  IMPORT  -----   function
+;_asm_HomeUp                         IMPORT  -----   function
+;_asm_ClrLCD                         IMPORT  -----   function
+;__OS                                IMPORT  -----   function
+;Buf                                   IX-6      3   variable
+;Input                                 IX-3      3   variable
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	SEGMENT STRSECT
+L__0:
+	DB	"Input: "
+	DB	0
+	SEGMENT CODE
+;   42	
+;   43	/* Draw text on the homescreen at the given X/Y location */
+;   44	void printText(const char *text) {
+_printText:
+	CALL	__frameset0
+;   45	    os_PutStrFull(strcat("\n", text));
+	LD	BC,(IX+6)
+	PUSH	BC
+	LD	BC,L__3
+	PUSH	BC
+	CALL	_strcat
+	POP	BC
+	POP	BC
+	PUSH	HL
+	CALL	_os_PutStrFull
+	POP	BC
+;   46	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _printText ***************************
+;Name                         Addr/Register   Size   Type
+;_strcat                             IMPORT  -----   function
+;_os_PutStrFull                      IMPORT  -----   function
+;text                                  IX+6      3   parameter
+
+
+; Stack Frame Size: 9 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	SEGMENT STRSECT
+L__3:
+	DB	10,0
+	SEGMENT CODE
+;   47	
+;   48	/* Draw small text at the given X/Y location */
+;   49	void printTextSmall(const char *text, uint8_t xpos, uint8_t ypos) {
+_printTextSmall:
+	CALL	__frameset0
+;   50	    os_FontSelect(0); // sets small font (1 == big, see docs)
+	LD	BC,0
+	PUSH	BC
+	CALL	_os_FontSelect
+	POP	BC
+;   51	    os_FontDrawText(text, xpos, ypos);
+	LD	C,(IX+12)
+	LD	B,0
+	PUSH	BC
+	LD	C,(IX+9)
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_os_FontDrawText
+	POP	BC
+	POP	BC
+	POP	BC
+;   52	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _printTextSmall ***************************
+;Name                         Addr/Register   Size   Type
+;_os_FontDrawText                    IMPORT  -----   function
+;_os_FontSelect                      IMPORT  -----   function
+;ypos                                 IX+12      1   parameter
+;xpos                                  IX+9      1   parameter
+;text                                  IX+6      3   parameter
+
+
+; Stack Frame Size: 15 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   53	
+;   54	char *scanText(char *inputPlaceholder) {
+_scanText:
+	LD	HL,-3
+	CALL	__frameset
+;   55	    /* Initialize buffer */
+;   56	    char *Buf;
+;   57	
+;   58	    /* Init buf size */
+;   59	    size_t bufsize = 100;
+;   60	
+;   61	    /* Fetch input*/
+;   62	    os_GetStringInput(inputPlaceholder, Buf, bufsize);
+	LD	BC,100
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_os_GetStringInput
+	POP	BC
+	POP	BC
+	POP	BC
+;   63	
+;   64	    return Buf;
+	LD	HL,(IX+-3)
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _scanText ***************************
+;Name                         Addr/Register   Size   Type
+;_os_GetStringInput                  IMPORT  -----   function
+;Buf                                   IX-3      3   variable
+;inputPlaceholder                      IX+6      3   parameter
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	XREF _strcat:ROM
+	XREF _asm_DrawStatusBar:ROM
+	XREF _asm_ClrLCD:ROM
+	XREF _asm_HomeUp:ROM
+	XREF __OS:ROM
+	XREF _os_GetCSC:ROM
+	XREF _os_GetStringInput:ROM
+	XREF _os_PutStrFull:ROM
+	XREF _os_FontDrawText:ROM
+	XREF _os_FontSelect:ROM
+	XREF __frameset0:ROM
+	XREF __frameset:ROM
+	XDEF _scanText
+	XDEF _printTextSmall
+	XDEF _printText
+	XDEF _main
+	END
