@@ -7,12 +7,14 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string.h>    
+#include <errno.h> 
 
 /* Put function prototypes here */
 void printText(const char *text);
 void printTextSmall(const char *text, uint8_t xpos, uint8_t ypos);
 char *scanText(char *inputPlaceholder);
+
 
 typedef struct {
     char data[256];
@@ -24,7 +26,7 @@ typedef struct {
 Block newBlock(int previousHash, int index) {
     Block new;
 
-    strcpy(new.data, index);
+    sprintf(new.data, "%d", index); 
 
     new.prevHash = previousHash;
 
