@@ -21,6 +21,32 @@ typedef struct {
     int nonce;
 }Block;
 
+Block newBlock(int previousHash, int index) {
+    Block new;
+
+    strcpy(new.data, index);
+
+    new.prevHash = previousHash;
+
+    char hashData[256];
+    sprintf(hashData, "%s%d", new.data, new.prevHash);
+    new.hash = hash(hashData);
+
+    const char *FirstSuccess = "Found block ";
+
+    const char *SecondarySuccess = strcat(*FirstSuccess, new.hash);
+
+    const char *Success = strcat(*SecondarySuccess, ": ");
+
+    const char *Blockhash = new.hash;
+
+    const char *FinalSuccess = strcat(*Success, *Blockhash);
+    
+    printText(FinalSuccess);
+
+    return new;
+}
+
 /* Put all your code here */
 int main(void) {
     /* uint8_t is an unsigned integer that can range from 0-255. */
@@ -57,9 +83,16 @@ int main(void) {
     os_GetStringInput(Input, Buf, bufsize);
 
     if (*Buf == *Option0Cnp) {
-        Block genesis;
-        strcpy(genesis.data, "Genesis");
-        prevHash = 0;
+        Block genesis = newBlock(0, 0);
+
+        const char *Success = "Found genesis block: ";
+
+        const char *Blockhash = genesis.hash;
+
+        const char *FinalSuccess = strcat(*Success, *Blockhash);
+        
+        printText(FinalSuccess);
+
     } else if (*Buf == *Option1Cnp) {
 
     } else if (*Buf == *Option2Cnp) {
@@ -74,7 +107,12 @@ int main(void) {
 }
 
 int hash(char data[]) {
-    
+    int hash = 0;
+
+    for (int i = 0; i < strlen(data); i++) {
+        hash = hash ^ data[i];
+        hash = hash * 0x123456789;
+    }   
 }
 
 /* Draw text on the homescreen at the given X/Y location */
@@ -100,3 +138,5 @@ char *scanText(char *inputPlaceholder) {
 
     return Buf;
 }
+
+// Wow, such spaghetti. Much code.
